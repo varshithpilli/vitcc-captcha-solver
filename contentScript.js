@@ -175,7 +175,7 @@ const solveChennai = (img, textBox) => {
         out += label_txt[block];
       }
       console.log(out);
-      textBox.value = out.strip();
+      textBox.value = out.trim();
       var box = document.getElementsByClassName("row")[1];
       const strings = [
         "Filled by yours truly",
@@ -221,7 +221,6 @@ const tryUrls = ()=>{
     img.style.width="200px!important";
     solveChennai(img, textBox);
   }
-  console.log(site);
 }
 
 tryUrls()
