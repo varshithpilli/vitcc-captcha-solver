@@ -1,21 +1,41 @@
 {
   "manifest_version": 3,
-  "name": "Captcha Solver",
-  "version": "1.0",
-
-  "permissions": ["scripting", "activeTab"],
-
+  "name": "Lazy VITC",
+  "version": "1.1",
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "storage"
+  ],
   "web_accessible_resources": [
     {
-      "resources": ["weights.json"],
-      "matches": ["*://vtopcc.vit.ac.in/*", "*://vtopregcc.vit.ac.in/*"]
+      "resources": [
+        "weights.json"
+      ],
+      "matches": [
+        "*://vtopcc.vit.ac.in/*",
+        "*://vtopregcc.vit.ac.in/*",
+        "*://vtop.vit.ac.in/*"
+      ]
     }
   ],
-  
   "content_scripts": [
     {
-      "matches": ["*://vtopcc.vit.ac.in/*", "*://vtopregcc.vit.ac.in/*"],
-      "js": ["contentScript.js"]
+      "matches": [
+        "*://vtopcc.vit.ac.in/*",
+        "*://vtopregcc.vit.ac.in/*",
+        "*://vtop.vit.ac.in/*"
+      ],
+      "js": [
+        "login/utils.js",
+        "login/captcha.js",
+        "navigation/attendance.js",
+        "navigation/marks.js",
+        "navigation/timetable.js",
+        "navigation/exam_schedule.js",
+        "navigation/injected_nav.js",
+        "navigation/detector.js"
+      ]
     }
   ]
 }
