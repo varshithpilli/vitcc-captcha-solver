@@ -1,38 +1,44 @@
-## VIT Chennai Captcha Solver (Modified)
+# Lazy VIT
 
-This is a modified version of the VtopCaptchaSolver3.0 originally created by Pratyush.
+Lazy VIT is a lightweight browser extension that solves VIT Chennai captchas and adds quick navigation buttons for faster use of VTOP.
 
-### Why?
+## What it Does
 
-The original version had some issues when I tried to use it on my browser. Specifically, the extension seemed to send data to a server(for further trainig the model ig), which caused errors for me.
+### Auto Captcha
+- Automatically reads and fills the captcha on VTOP (Chennai).
+- Uses fixed and working model weights.
+- No data is sent anywhere.
+- Based on the original VtopCaptchaSolver3.0 but cleaned and simplified.
 
-This modified version changed following:
+### Navigation Buttons
+Adds easy shortcuts to commonly used VTOP pages:
+- Attendance
+- Marks
+- Grade View
+- Academic Calendar
 
-* **Removed Server Communication:** Removed the parts of the code that tried to send data back to a server. This stopped the errors I was seeing.
-* **Corrected Weights:** The original model's weights for the Chennai campus were not working correctly(returned an UNDEFINED eevrytime I ran it). This version now uses the working weights of the Vellore campus version.
-* **Tree-shake:** Removed support for other Vtop websites (like those for Vellore, AP and Bhopal). This made the code simpler and smaller, as it only focuses on the Chennai campus.
+### Cleaner View
+Unnecessary elements from the webpage are removed to give a simpler and less cluttered VTOP interface.
 
-### Now
+## Captcha Supported Websites
+Works only on VIT Chennai websites:
+- `vtopcc.vit.ac.in`
+- `vtopregcc.vit.ac.in` (captcha accuracy slightly lower)
 
-This solver is now focused only on the Chennai campus websites:
+## How to Install
+1. Download or clone this repository.  
+2. Open your browser’s extensions page:  
+   - Chrome/Edge: `chrome://extensions`
+3. Enable **Developer Mode**.  
+4. Click **Load unpacked**.  
+5. Select the folder of this extension.
 
-* [`vtop chennai`](http://vtopcc.vit.ac.in/)
-* [`vtopreg chennai`](http://vtopregcc.vit.ac.in/)
+The extension will:
+- Auto-solve captchas  
+- Add quick navigation buttons  
+- Clean up the page view  
 
-> **Note on vtopreg:** The accuracy for vtopreg is a bit lower and might not always work perfectly.
-
-### Installation
-
-1.  **Clone:** Get the code by cloning this repository.
-2.  **Open Extensions:** Go to your browser's extensions page (e.g., `chrome://extensions` for Chrome/Edge or `about:addons` for Firefox).
-3.  **Enable Developer Mode:** Turn on **Developer mode** (usually a toggle switch in the top corner).
-4.  **Load Extension:** Click on **"Load unpacked"** (or a similar button) and select the folder you cloned.
-
-The extension is now active and ready to solve captchas on the VIT Chennai pages.
-
-### Credits
-
-This tool is a modification of the original work:
-
-* **Original Author:** [pratyush](https://github.com/pratyush3124)
-* **Original Repository:** [CaptchsSolver3.0](https://github.com/pratyush3124/VtopCaptchaSolver3.0)
+## Credits
+- Original project: **VtopCaptchaSolver3.0** by *Pratyush*  
+- Original repository: https://github.com/pratyush3124/VtopCaptchaSolver3.0  
+- This version modifies the structure, fixes model issues, removes data-sending code, limits support to Chennai campus, and simplifies the overall UI.
