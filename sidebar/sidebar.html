@@ -1,156 +1,218 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lazy VITC</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    body {
-      width: 100%;
-      min-width: 250px;
+    * {
       margin: 0;
-      padding: 10px;
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
+      padding: 0;
       box-sizing: border-box;
     }
-    
-    h1 {
-      color: #007bff;
-      text-align: center;
-      margin-top: 0;
-      font-size: 18px;
-      white-space: nowrap;
+
+    html, body {
+      width: 100%;
+      height: 100%;
       overflow: hidden;
-      text-overflow: ellipsis;
     }
-    
-    .features-container {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      width: 100%;
-      padding-bottom: 60px;
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     }
-    
-    .feature-card {
-      background-color: white;
-      border-radius: 8px;
-      padding: 15px;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+
+    /* Light mode (default) */
+    body.light-mode {
+      background-color: #f8f9fa;
+      color: #1a1a1a;
+    }
+
+    /* Dark mode */
+    body.dark-mode {
+      background-color: #1a1a1a;
+      color: #e5e5e5;
+    }
+
+    .card {
+      border: 1px solid;
       cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      width: 100%;
-      box-sizing: border-box;
     }
-    
-    .feature-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+
+    body.light-mode .card {
+      background-color: #ffffff;
+      border-color: #e5e7eb;
     }
-    
-    .feature-title {
-      font-size: 16px;
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 5px;
+
+    body.dark-mode .card {
+      background-color: #2d2d2d;
+      border-color: #404040;
     }
-    
-    .feature-description {
-      font-size: 12px;
-      color: #666;
-      margin: 0;
+
+    body.light-mode .card:active {
+      background-color: #f3f4f6;
     }
-    
-    .feature-icon {
-      font-size: 24px;
-      margin-bottom: 10px;
-      text-align: center;
-      color: #007bff;
+
+    body.dark-mode .card:active {
+      background-color: #383838;
     }
-    
-    .credentials-card {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      padding: 8px 10px;
-      box-shadow: 0 -2px 8px rgba(0,0,0,0.15);
+
+    .link-text {
+      text-decoration: none;
       cursor: pointer;
-      transition: transform 0.2s;
-      z-index: 1000;
     }
-    
-    .credentials-card:hover {
-      transform: translateY(-2px);
+
+    body.light-mode .link-text {
+      color: #4b5563;
     }
-    
-    .credentials-content {
+
+    body.dark-mode .link-text {
+      color: #9ca3af;
+    }
+
+    body.light-mode .link-text:active {
+      color: #1f2937;
+    }
+
+    body.dark-mode .link-text:active {
+      color: #d1d5db;
+    }
+
+    .theme-toggle {
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
       display: flex;
       align-items: center;
-      justify-content: space-between;
-      color: white;
+      justify-content: center;
+      border-radius: 6px;
+      border: 1px solid;
     }
-    
-    .credentials-left {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+
+    body.light-mode .theme-toggle {
+      border-color: #e5e7eb;
+      background-color: #ffffff;
     }
-    
-    .credentials-icon {
-      font-size: 18px;
+
+    body.dark-mode .theme-toggle {
+      border-color: #404040;
+      background-color: #2d2d2d;
     }
-    
-    .credentials-text {
-      font-size: 12px;
-      font-weight: bold;
+
+    body.light-mode .theme-toggle:active {
+      background-color: #f3f4f6;
     }
-    
-    .credentials-arrow {
-      font-size: 16px;
+
+    body.dark-mode .theme-toggle:active {
+      background-color: #383838;
     }
   </style>
 </head>
-<body>
-  <h1>Lazy VITC</h1>
-  
-  <div class="features-container">
-    <div class="feature-card" id="clear-storage-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none;">
-      <div class="feature-icon">🗑️</div>
-      <div class="feature-title" style="color: white;">Clear Local Storage</div>
-      <p class="feature-description" style="color: rgba(255,255,255,0.9);">Clear all stored data, preferences, and settings</p>
-    </div>
+<body class="light-mode">
+  <div style="display: flex; flex-direction: column; height: 100%; overflow: hidden;">
     
-    <div class="feature-card" data-target="facultyRatings.html">
-      <div class="feature-icon"></div>
-      <div class="feature-title">Faculty Ratings</div>
-      <p class="feature-description">View and manage faculty ratings and reviews</p>
-    </div>
-    
-    <div class="feature-card" data-target="ffcs.html">
-      <div class="feature-icon"></div>
-      <div class="feature-title">FFCS Course Registration</div>
-      <p class="feature-description">View faculty ratings in FFCS course registration page</p>
-    </div>
-    
-    <div class="feature-card" data-target="example.html">
-      <div class="feature-icon"></div>
-      <div class="feature-title">Example</div>
-      <p class="feature-description">Nothing...</p>
-    </div>
-    
-  </div>
-  
-  <div class="credentials-card" id="credentials-card">
-    <div class="credentials-content">
-      <div class="credentials-left">
-        <span class="credentials-icon">🔐</span>
-        <span class="credentials-text">Credentials</span>
+    <!-- Header -->
+    <div style="padding: 16px 16px 12px 16px; display: flex; align-items: center; justify-content: space-between;">
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="m10 20-1.25-2.5L6 18"/><path d="M10 4 8.75 6.5 6 6"/><path d="m14 20 1.25-2.5L18 18"/><path d="m14 4 1.25 2.5L18 6"/><path d="m17 21-3-6h-4"/><path d="m17 3-3 6 1.5 3"/><path d="M2 12h6.5L10 9"/><path d="m20 10-1.5 2 1.5 2"/><path d="M22 12h-6.5L14 15"/><path d="m4 10 1.5 2L4 14"/><path d="m7 21 3-6-1.5-3"/><path d="m7 3 3 6h4"/>
+        </svg>
+        <h1 style="font-size: 22px; font-weight: 600; letter-spacing: -0.01em;">I'm LAZYYY</h1>
       </div>
-      <span class="credentials-arrow">→</span>
+      <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+        <svg id="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg id="moon-icon" style="display: none;" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+      </button>
     </div>
+
+    <!-- Main Content Area -->
+    <div style="flex: 1; overflow-y: auto; padding: 0 16px;">
+      
+      <!-- Feature Cards -->
+      <div style="display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
+        
+        <div class="card" data-target="facultyRatings.html" style="padding: 14px; border-radius: 6px;">
+          <div style="font-size: 15px; font-weight: 500; margin-bottom: 4px;">Faculty Ratings</div>
+          <div style="font-size: 13px; opacity: 0.7;">View and manage faculty ratings and reviews</div>
+        </div>
+        
+        <div class="card" data-target="ffcs.html" style="padding: 14px; border-radius: 6px;">
+          <div style="font-size: 15px; font-weight: 500; margin-bottom: 4px;">FFCS Course Registration</div>
+          <div style="font-size: 13px; opacity: 0.7;">View faculty ratings in FFCS course registration page</div>
+        </div>
+        
+        <div class="card" data-target="example.html" style="padding: 14px; border-radius: 6px;">
+          <div style="font-size: 15px; font-weight: 500; margin-bottom: 4px;">Example</div>
+          <div style="font-size: 13px; opacity: 0.7;">Nothing...</div>
+        </div>
+
+      </div>
+
+      <!-- Bottom Action Cards Row -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 10px;">
+        
+        <div class="card" id="clear-storage-card" style="padding: 14px; border-radius: 6px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+            </svg>
+            <div style="font-size: 13px; font-weight: 500;">Clear Storage</div>
+          </div>
+          <div style="font-size: 12px; opacity: 0.7;">Reset all data</div>
+        </div>
+
+        <div class="card" id="credentials-card" style="padding: 14px; border-radius: 6px;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+            </svg>
+            <div style="font-size: 13px; font-weight: 500;">Credentials</div>
+          </div>
+          <div style="font-size: 11px; opacity: 0.7;">Manage login info</div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <div style="padding: 12px 16px 16px 16px; border-top: 1px solid;" id="footer-border">
+      <div style="display: flex; flex-direction: column; gap: 8px;">
+        <a href="https://github.com/varshithpilli/lazy-vitc" target="_blank" class="link-text" style="font-size: 13px; display: flex; align-items: center; gap: 6px;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/>
+          </svg>
+          Open Source
+        </a>
+        <a href="https://vitverse.divyanshupatel.com/" target="_blank" class="link-text" style="font-size: 12px; opacity: 0.65; display: flex; align-items: center; gap: 6px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h6"/><path d="m21 3-9 9"/><path d="M15 3h6v6"/>
+          </svg>
+          Cross-Platform Integration with VIT Verse
+        </a>
+        <div style="font-size: 12px; opacity: 0.5; display: flex; align-items: center; gap: 6px; margin-top: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 21v-3a2 2 0 0 0-4 0v3"/><path d="M18 12h.01"/><path d="M18 16h.01"/><path d="M22 7a1 1 0 0 0-1-1h-2a2 2 0 0 1-1.143-.359L13.143 2.36a2 2 0 0 0-2.286-.001L6.143 5.64A2 2 0 0 1 5 6H3a1 1 0 0 0-1 1v12a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2z"/><path d="M6 12h.01"/><path d="M6 16h.01"/><circle cx="12" cy="10" r="2"/>
+          </svg>
+          VIT Chennai Campus
+        </div>
+      </div>
+    </div>
+
   </div>
-  
+
   <script src="sidebar.js"></script>
 </body>
 </html>

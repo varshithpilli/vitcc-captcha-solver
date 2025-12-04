@@ -25,60 +25,63 @@ function displayRatings() {
   const list = document.getElementById('ratingsList');
   
   if (!facultyRatingsData.length) {
-    list.innerHTML = '<div class="no-ratings">No ratings imported yet.</div>';
+    list.innerHTML = '<div class="card" style="padding: 20px; border-radius: 6px; text-align: center;"><div style="font-size: 13px; opacity: 0.7;">No ratings imported yet.</div></div>';
     return;
   }
   
-  const sorted = [...facultyRatingsData].sort((a, b) => a.overall_rating - b.overall_rating);
+  const sorted = [...facultyRatingsData].sort((a, b) => b.overall_rating - a.overall_rating);
   list.innerHTML = '';
   
   sorted.forEach(faculty => {
     const item = document.createElement('div');
-    item.className = 'rating-item';
+    item.className = 'card';
+    item.style.cssText = 'padding: 14px; border-radius: 6px; margin-bottom: 10px;';
     item.innerHTML = `
-      <div class="faculty-header">
-        <div class="faculty-info">
-          <div class="faculty-name">${faculty.name}</div>
-          <div class="faculty-id">${faculty.faculty_id}</div>
+      <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid;" class="faculty-divider">
+        <div style="flex: 1; min-width: 0;">
+          <div style="font-size: 14px; font-weight: 600; margin-bottom: 3px; overflow: hidden; text-overflow: ellipsis;">${faculty.name}</div>
+          <div style="font-size: 10px; opacity: 0.6;">${faculty.faculty_id}</div>
         </div>
-        <div class="rating-value" style="background-color: ${getRatingColor(faculty.overall_rating)}">
+        <div style="padding: 4px 10px; border-radius: 4px; color: white; font-weight: 600; font-size: 13px; margin-left: 8px; flex-shrink: 0;" data-rating="${faculty.overall_rating.toFixed(1)}">
           ${faculty.overall_rating.toFixed(1)}
         </div>
       </div>
-      <div class="rating-details">
-        <div class="rating-row">
-          <div class="rating-label-row">
-            <span class="rating-label">Teaching:</span>
-            <span class="rating-value-display">${faculty.teaching.toFixed(1)}</span>
-          </div>
+      <div style="display: flex; flex-direction: column; gap: 6px;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+          <span style="opacity: 0.7;">Teaching:</span>
+          <span style="font-weight: 600;">${faculty.teaching.toFixed(1)}</span>
         </div>
-        <div class="rating-row">
-          <div class="rating-label-row">
-            <span class="rating-label">Attendance:</span>
-            <span class="rating-value-display">${faculty.attendance_flex.toFixed(1)}</span>
-          </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+          <span style="opacity: 0.7;">Attendance:</span>
+          <span style="font-weight: 600;">${faculty.attendance_flex.toFixed(1)}</span>
         </div>
-        <div class="rating-row">
-          <div class="rating-label-row">
-            <span class="rating-label">Support:</span>
-            <span class="rating-value-display">${faculty.supportiveness.toFixed(1)}</span>
-          </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+          <span style="opacity: 0.7;">Support:</span>
+          <span style="font-weight: 600;">${faculty.supportiveness.toFixed(1)}</span>
         </div>
-        <div class="rating-row">
-          <div class="rating-label-row">
-            <span class="rating-label">Marks:</span>
-            <span class="rating-value-display">${faculty.marks.toFixed(1)}</span>
-          </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px;">
+          <span style="opacity: 0.7;">Marks:</span>
+          <span style="font-weight: 600;">${faculty.marks.toFixed(1)}</span>
         </div>
-        <div class="rating-row">
-          <div class="rating-label-row">
-            <span class="rating-label">Total Ratings:</span>
-            <span class="rating-value-display">${faculty.total_ratings}</span>
-          </div>
+        <div style="display: flex; justify-content: space-between; font-size: 11px; margin-top: 4px; padding-top: 6px; border-top: 1px solid;" class="ratings-divider">
+          <span style="opacity: 0.6;">Total Ratings:</span>
+          <span style="font-weight: 600;">${faculty.total_ratings}</span>
         </div>
       </div>
-      <div class="last-updated">Updated: ${faculty.last_updated}</div>
+      <div style="font-size: 10px; opacity: 0.5; text-align: right; margin-top: 8px;">Updated: ${faculty.last_updated}</div>
     `;
+    
+    // Set rating badge color
+    const ratingBadge = item.querySelector('[data-rating]');
+    ratingBadge.style.backgroundColor = getRatingColor(faculty.overall_rating);
+    
+    // Set divider colors based on theme
+    const isDark = document.body.classList.contains('dark-mode');
+    const dividers = item.querySelectorAll('.faculty-divider, .ratings-divider');
+    dividers.forEach(div => {
+      div.style.borderColor = isDark ? '#404040' : '#e5e7eb';
+    });
+    
     list.appendChild(item);
   });
 }
@@ -121,6 +124,45 @@ function loadRatings() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Theme management
+  const themeToggle = document.getElementById('theme-toggle');
+  const sunIcon = document.getElementById('sun-icon');
+  const moonIcon = document.getElementById('moon-icon');
+  const headerBorder = document.getElementById('header-border');
+  
+  // Load saved theme
+  chrome.storage.local.get(['theme'], function(result) {
+    const savedTheme = result.theme || 'dark';
+    applyTheme(savedTheme);
+  });
+  
+  function applyTheme(theme) {
+    if (theme === 'dark') {
+      document.body.classList.remove('light-mode');
+      document.body.classList.add('dark-mode');
+      sunIcon.style.display = 'none';
+      moonIcon.style.display = 'block';
+      if (headerBorder) {
+        headerBorder.style.borderBottomColor = '#404040';
+      }
+    } else {
+      document.body.classList.remove('dark-mode');
+      document.body.classList.add('light-mode');
+      sunIcon.style.display = 'block';
+      moonIcon.style.display = 'none';
+      if (headerBorder) {
+        headerBorder.style.borderBottomColor = '#e5e7eb';
+      }
+    }
+  }
+  
+  themeToggle.addEventListener('click', function() {
+    const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme(newTheme);
+    chrome.storage.local.set({ theme: newTheme });
+  });
+
   loadRatings();
   
   document.getElementById('importBtn').addEventListener('click', () => {

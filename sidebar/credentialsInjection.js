@@ -17,6 +17,46 @@ function loadCredentials() {
   });
 }
 
+// Theme management
+function initializeTheme() {
+  const themeToggle = document.getElementById('theme-toggle');
+  const sunIcon = document.getElementById('sun-icon');
+  const moonIcon = document.getElementById('moon-icon');
+  const headerBorder = document.getElementById('header-border');
+  
+  chrome.storage.local.get(['theme'], function(result) {
+    const savedTheme = result.theme || 'dark';
+    applyTheme(savedTheme);
+  });
+  
+  function applyTheme(theme) {
+    const isDark = theme === 'dark';
+    document.body.classList.toggle('dark-mode', isDark);
+    document.body.classList.toggle('light-mode', !isDark);
+    sunIcon.style.display = isDark ? 'none' : 'block';
+    moonIcon.style.display = isDark ? 'block' : 'none';
+    if (headerBorder) {
+      headerBorder.style.borderBottomColor = isDark ? '#404040' : '#e5e7eb';
+    }
+    // Update dividers
+    document.querySelectorAll('.card-divider').forEach(div => {
+      div.style.borderColor = isDark ? '#404040' : '#e5e7eb';
+    });
+  }
+  
+  themeToggle.addEventListener('click', function() {
+    const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+    const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+    applyTheme(newTheme);
+    chrome.storage.local.set({ theme: newTheme });
+  });
+  
+  // Back button
+  document.getElementById('backButton').addEventListener('click', () => {
+    window.location.href = 'sidebar.html';
+  });
+}
+
 function updateButtonState(t, u) {
   const b = document.getElementById(`${t}-save-btn`);
   if (b) b.textContent = u ? "Update" : "Save";
@@ -136,6 +176,7 @@ function setupToggleHandlers(type) {
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Credentials page loaded");
+  initializeTheme();
   loadCredentials();
   
   // Attach save button click handlers
