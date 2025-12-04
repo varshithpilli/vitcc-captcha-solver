@@ -2,13 +2,10 @@ const solveChennai = (img, textBox, callback) => {
   fetch(chrome.runtime.getURL("weights.json"))
     .then((response) => response.json())
     .then((data) => {
-
       const HEIGHT = 40;
       const WIDTH = 200;
-
       const weights = data.weights;
       const biases = data.biases;
-
       const label_txt = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
       const canvas = document.createElement("canvas");
@@ -39,7 +36,6 @@ const solveChennai = (img, textBox, callback) => {
 
 const tryUrls = () => {
   console.log(document.URL);
-  
   let autoSubmitRequested = false;
   
   document.addEventListener('fillCaptcha', (e) => {
@@ -55,9 +51,7 @@ const tryUrls = () => {
   
   if (document.URL.match("vtopcc.vit.ac.in")) {
     handleVtopCaptcha(false);
-  }
-
-  else if (document.URL.match("https://vtopregcc.vit.ac.in/RegistrationNew/")) {
+  } else if (document.URL.match("https://vtopregcc.vit.ac.in/RegistrationNew/")) {
     handleFFCSCaptcha(false);
   }
 }
@@ -67,7 +61,6 @@ function handleVtopCaptcha(autoSubmit) {
   if (!img) {
     img = document.getElementsByClassName("form-control bg-light border-0")[0];
   }
-  
   let textBox = document.getElementById("captchaStr");
   
   if (!img || !textBox) {
@@ -89,7 +82,7 @@ function handleVtopCaptcha(autoSubmit) {
       }, 500);
     }
   });
-
+  
   let container = document.getElementById("captchaBlock");
   if (!container) {
     console.log("No captcha container found");
@@ -151,14 +144,12 @@ function handleFFCSCaptcha(autoSubmit) {
         console.log("CAPTCHA refreshed, solving again...");
         solveCaptchaStep2();
       });
-      
       observer.observe(testDiv, { 
         childList: true, 
         subtree: true,
         attributes: true,
         attributeFilter: ['src'] 
       });
-      
       console.log("Observer set up for Step 2 CAPTCHA");
     }
     
@@ -169,8 +160,7 @@ function handleFFCSCaptcha(autoSubmit) {
         setTimeout(solveCaptchaStep2, 500);
       });
     }
-  }
-  else if (document.getElementById("captchaString")) {
+  } else if (document.getElementById("captchaString")) {
     console.log("Step 1 CAPTCHA detected");
     let img = document.getElementById("captcha_id");
     let textBox = document.getElementById("captchaString");

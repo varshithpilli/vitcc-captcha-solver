@@ -79,7 +79,7 @@ function saveCredentials(t) {
       showMessage(t, "Error saving", false);
     } else {
       console.log(`Successfully saved ${storageKey}`);
-      showMessage(t, "Saved ✓", true);
+      showMessage(t, "Saved", true);
       updateButtonState(t, true);
       
       // Verify it was saved
@@ -92,6 +92,47 @@ function saveCredentials(t) {
 
 // Make saveCredentials available globally for inline onclick handlers
 window.saveCredentials = saveCredentials;
+
+// Handle toggle interactions
+function setupToggleHandlers(type) {
+  const autoSubmitToggle = document.getElementById(`${type}-submit`);
+  const fillFormToggle = document.getElementById(`${type}-fill`);
+  const fillCaptchaToggle = document.getElementById(`${type}-captcha`);
+  
+  if (!autoSubmitToggle || !fillFormToggle) return;
+  
+  // When auto-submit is turned ON, automatically enable fillForm and fillCaptcha
+  autoSubmitToggle.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      fillFormToggle.checked = true;
+      if (fillCaptchaToggle) {
+        fillCaptchaToggle.checked = true;
+      }
+      console.log(`Auto-submit enabled for ${type}, enabling fillForm and fillCaptcha`);
+    }
+  });
+  
+  // When fillForm is turned OFF, automatically disable autoSubmit
+  fillFormToggle.addEventListener('change', (e) => {
+    if (!e.target.checked) {
+      autoSubmitToggle.checked = false;
+      if (fillCaptchaToggle) {
+        fillCaptchaToggle.checked = false;
+      }
+      console.log(`Fill form disabled for ${type}, disabling autoSubmit and fillCaptcha`);
+    }
+  });
+  
+  // When fillCaptcha is turned OFF, automatically disable autoSubmit (for sites with captcha)
+  if (fillCaptchaToggle) {
+    fillCaptchaToggle.addEventListener('change', (e) => {
+      if (!e.target.checked) {
+        autoSubmitToggle.checked = false;
+        console.log(`Fill captcha disabled for ${type}, disabling autoSubmit`);
+      }
+    });
+  }
+}
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Credentials page loaded");
@@ -106,6 +147,9 @@ document.addEventListener("DOMContentLoaded", () => {
       saveBtn.addEventListener("click", () => saveCredentials(t));
       console.log(`Attached click handler for ${t}-save-btn`);
     }
+    
+    // Setup toggle handlers
+    setupToggleHandlers(t);
     
     // Update button state on input
     ["username", "password"].forEach(i => {

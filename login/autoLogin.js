@@ -9,57 +9,44 @@ const wait = (s, cb, timeout = 5000) => {
       cb();
     } else if (Date.now() - startTime > timeout) {
       clearInterval(t);
-      console.log(`Timeout waiting for selector: ${s}`);
     }
   }, 100);
 };
 
-const fillCredentials = (usernameSelector, passwordSelector, submitSelector, storageKey, hasCaptcha) => {
+const loginAttempts = {
+  vtop: false,
+  ffcs: false,
+  lms: false
+};
+
+const fillCredentials = (usernameSelector, passwordSelector, submitSelector, storageKey, attemptKey) => {
+  if (loginAttempts[attemptKey]) return;
+  
   chrome.storage.local.get(storageKey, r => {
     const d = r[storageKey];
-    if (!d) {
-      console.log(`No credentials found for ${storageKey}`);
-      return;
-    }
-    
-    // If autoSubmit is enabled, ensure fillForm and fillCaptcha are also enabled
-    if (d.autoSubmit) {
-      d.fillForm = true;
-      if (hasCaptcha) d.fillCaptcha = true;
-    }
+    if (!d || !d.fillForm) return;
     
     wait(usernameSelector, () => {
       const usernameField = q(usernameSelector);
       const passwordField = q(passwordSelector);
       
-      if (!usernameField || !passwordField) {
-        console.log("Username or password field not found");
-        return;
-      }
+      if (!usernameField || !passwordField) return;
       
       usernameField.value = d.username || "";
       passwordField.value = d.password || "";
       
-      if (d.fillForm) {
-        ["input", "change"].forEach(e => {
-          usernameField.dispatchEvent(new Event(e, { bubbles: true }));
-          passwordField.dispatchEvent(new Event(e, { bubbles: true }));
-        });
-      }
+      ["input", "change"].forEach(e => {
+        usernameField.dispatchEvent(new Event(e, { bubbles: true }));
+        passwordField.dispatchEvent(new Event(e, { bubbles: true }));
+      });
       
-      // If this site has captcha functionality and fillCaptcha is enabled
-      if (hasCaptcha && d.fillCaptcha) {
+      loginAttempts[attemptKey] = true;
+      
+      const hasCaptchaBlock = !!document.getElementById("captchaBlock");
+      const hasCaptchaId = !!document.getElementById("captcha_id");
+      
+      if ((hasCaptchaBlock || hasCaptchaId) && d.fillCaptcha) {
         document.dispatchEvent(new CustomEvent("fillCaptcha", { detail: { autoSubmit: d.autoSubmit } }));
-      }
-      // If no captcha but autoSubmit is enabled
-      else if (d.autoSubmit) {
-        setTimeout(() => {
-          const submitBtn = q(submitSelector);
-          if (submitBtn) {
-            submitBtn.click();
-            console.log("Auto-submit clicked");
-          }
-        }, 300);
       }
     });
   });
@@ -67,31 +54,32 @@ const fillCredentials = (usernameSelector, passwordSelector, submitSelector, sto
 
 const handleVtopLogin = () => {
   const currentUrl = window.location.href;
-  if (currentUrl.includes("vtopcc.vit.ac.in") && currentUrl.includes("/vtop/")) {
-    console.log("VTOP login page detected");
-    fillCredentials("#username", "#password", "#submitBtn", "vtopCreds", true);
+  
+  if (currentUrl.includes("/vtop/open/page")) {
+    chrome.storage.local.get("vtopCreds", r => {
+      const d = r.vtopCreds;
+      if (d && d.autoSubmit) {
+        setTimeout(() => {
+          const studentForm = document.getElementById("stdForm");
+          if (studentForm) studentForm.submit();
+        }, 500);
+      }
+    });
+  } else if (currentUrl.includes("/vtop/")) {
+    fillCredentials("#username", "#password", "#submitBtn", "vtopCreds", "vtop");
   }
 };
 
 const handleFFCSLogin = () => {
-  const currentUrl = window.location.href;
-  if (currentUrl.includes("vtopregcc.vit.ac.in")) {
-    console.log("FFCS login page detected");
-    fillCredentials("#username", "#password", "#submitBtn", "ffcsCreds", true);
-  }
+  fillCredentials("#username", "#password", "#submitBtn", "ffcsCreds", "ffcs");
 };
 
 const handleLMSLogin = () => {
-  const currentUrl = window.location.href;
-  if (currentUrl.includes("lms.vit.ac.in")) {
-    console.log("LMS login page detected");
-    fillCredentials("#username", "#password", "#loginbtn", "lmsCreds", false);
-  }
+  fillCredentials("#username", "#password", "#loginbtn", "lmsCreds", "lms");
 };
 
 const tryAutoLogin = () => {
   const currentUrl = window.location.href;
-  console.log("Auto-login checking URL:", currentUrl);
   
   if (currentUrl.match("vtopcc.vit.ac.in")) {
     handleVtopLogin();
@@ -102,7 +90,6 @@ const tryAutoLogin = () => {
   }
 };
 
-// Run when DOM is ready
 if (document.readyState === "complete" || document.readyState === "interactive") {
   setTimeout(tryAutoLogin, 100);
 } else {
