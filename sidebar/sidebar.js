@@ -1,5 +1,4 @@
 document.addEventListener('DOMContentLoaded', function() {
-  // Add click event listeners to all feature cards
   const featureCards = document.querySelectorAll('.feature-card');
   featureCards.forEach(card => {
     card.addEventListener('click', function() {
@@ -9,4 +8,11 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
+  
+  const credentialsCard = document.getElementById('credentials-card');
+  if (credentialsCard) {
+    credentialsCard.addEventListener('click', function() {
+      window.location.href = 'credentialsInjection.html';
+    });
+  }
 });
