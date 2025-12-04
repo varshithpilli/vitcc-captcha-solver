@@ -20,6 +20,7 @@
         "weights.json",
         "sidebar/sidebar.js",
         "sidebar/facultyRatings.js",
+        "sidebar/ffcs.js",
         "sidebar/example.js",
         "navigation/facultyRatingsInjector.js"
       ],
@@ -44,7 +45,8 @@
         "navigation/marks.js",
         "navigation/nav.js",
         "navigation/detector.js",
-        "navigation/facultyRatingsInjector.js"
+        "navigation/facultyRatingsInjector.js",
+        "sidebar/ffcs.js"
       ]
     }
   ]

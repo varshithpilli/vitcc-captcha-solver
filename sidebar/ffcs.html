@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    body {
+      width: 100%;
+      min-width: 250px;
+      margin: 0;
+      padding: 10px;
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      box-sizing: border-box;
+    }
+    
+    .header {
+      display: flex;
+      align-items: center;
+      margin-bottom: 15px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    .back-button {
+      background: none;
+      border: none;
+      font-size: 16px;
+      cursor: pointer;
+      color: #007bff;
+      padding: 5px;
+      margin-right: 10px;
+    }
+    
+    h1 {
+      color: #007bff;
+      text-align: center;
+      margin: 0;
+      font-size: 18px;
+      flex-grow: 1;
+    }
+    
+    .toggle-section {
+      margin-bottom: 15px;
+      background-color: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .toggle-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #eee;
+    }
+    
+    .toggle-item:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+    
+    .toggle-label {
+      font-size: 12px;
+      color: #333;
+    }
+    
+    .switch {
+      position: relative;
+      display: inline-block;
+      width: 36px;
+      height: 20px;
+      flex-shrink: 0;
+    }
+    
+    .switch input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+    
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-color: #ccc;
+      transition: .4s;
+      border-radius: 20px;
+    }
+    
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 16px;
+      width: 16px;
+      left: 2px;
+      bottom: 2px;
+      background-color: white;
+      transition: .4s;
+      border-radius: 50%;
+    }
+    
+    input:checked + .slider {
+      background-color: #007bff;
+    }
+    
+    input:checked + .slider:before {
+      transform: translateX(16px);
+    }
+    
+    .number-input {
+      width: 60px;
+      padding: 4px;
+      border: 1px solid #ddd;
+      border-radius: 3px;
+      font-size: 12px;
+      text-align: center;
+    }
+    
+    .import-section {
+      margin-bottom: 15px;
+      text-align: center;
+      background-color: white;
+      padding: 10px;
+      border-radius: 5px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    #importBtn {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      font-size: 12px;
+      border-radius: 3px;
+      cursor: pointer;
+      margin: 5px 0;
+      width: 100%;
+      box-sizing: border-box;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    #importBtn:hover {
+      background-color: #0056b3;
+    }
+    
+    #fileInput {
+      display: none;
+    }
+    
+    .status-message {
+      font-size: 11px;
+      color: #666;
+      margin-top: 5px;
+      text-align: center;
+    }
+    
+    .stats-info {
+      font-size: 12px;
+      color: #007bff;
+      font-weight: bold;
+      text-align: center;
+    }
+    
+    .section-title {
+      font-size: 13px;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid #007bff;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <button class="back-button" id="backButton">←</button>
+    <h1>FFCS Course Registration</h1>
+  </div>
+  
+  <div class="toggle-section">
+    <div class="section-title">Display Options</div>
+    
+    <div class="toggle-item">
+      <span class="toggle-label">Show Faculty Ratings</span>
+      <label class="switch">
+        <input type="checkbox" id="showRatingsToggle" checked>
+        <span class="slider"></span>
+      </label>
+    </div>
+    
+    <div class="toggle-item">
+      <span class="toggle-label">Show Detailed Ratings</span>
+      <label class="switch">
+        <input type="checkbox" id="showDetailsToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+    
+    <div class="toggle-item">
+      <span class="toggle-label">Sort by Rating (High to Low)</span>
+      <label class="switch">
+        <input type="checkbox" id="sortByRatingToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+    
+    <div class="toggle-item">
+      <span class="toggle-label">Consider Available Seats</span>
+      <label class="switch">
+        <input type="checkbox" id="considerSeatsToggle">
+        <span class="slider"></span>
+      </label>
+    </div>
+    
+    <div class="toggle-item">
+      <span class="toggle-label">Max Subjects (0 = All)</span>
+      <input type="number" id="maxSubjectsInput" class="number-input" min="0" placeholder="0">
+    </div>
+    
+    <div class="toggle-item" style="border: none; padding-top: 8px;">
+      <span class="stats-info" id="statsInfo">No ratings loaded</span>
+    </div>
+  </div>
+  
+  <div class="import-section">
+    <input type="file" id="fileInput" accept=".json">
+    <button id="importBtn">Import Faculty Ratings JSON</button>
+    <p class="status-message" id="statusMessage">Faculty ratings will be shown in FFCS pages</p>
+  </div>
+  
+  <script src="ffcs.js"></script>
+</body>
+</html>
