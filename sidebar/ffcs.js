@@ -2,8 +2,10 @@
     'use strict';
 
     let facultyRatings = [];
+    let keywords = [];
+    let highlightColor = '#FFFF00';
+    let highlightEnabled = true;
     let settings = {
-        maxSubjects: 0,
         viewShowRatings: true,
         viewShowDetails: false,
         viewSortRating: false,
@@ -31,7 +33,7 @@
     }
 
     function isFFCSPage() {
-        return window.location.href.includes('vtopregcc.vit.ac.in/RegistrationNew');
+        return window.location.href.includes('vtopregcc.vit.ac.in');
     }
 
     function getPageType() {
@@ -192,52 +194,128 @@
             }
         });
 
-        if (pageType === 'courseList' && settings.maxSubjects > 0) {
-            handleCourseListMaxSubjects();
-        }
+        highlightKeywords();
     }
 
-    function handleCourseListMaxSubjects() {
-        const pageDivs = document.querySelectorAll('[id^="pageDivId"]');
-        if (pageDivs.length === 0) {
-            const tables = document.querySelectorAll('table.w3-table-all');
-            tables.forEach(table => {
-                const courseRows = Array.from(table.querySelectorAll('tr')).filter(row => {
-                    return row.querySelector('button[onclick*="callViewSlots"]') && row.querySelector('button[onclick*="callCourseRegistration"]');
-                });
-                courseRows.forEach((row, idx) => {
-                    row.style.display = idx >= settings.maxSubjects ? 'none' : '';
-                });
+    let highlightTimeout;
+    function applyKeywordHighlighting() {
+        if (!window.location.href.includes('vtopregcc.vit.ac.in')) return;
+        clearTimeout(highlightTimeout);
+        highlightTimeout = setTimeout(highlightKeywords, 100);
+    }
+
+    function highlightKeywords() {
+        removeHighlights();
+        if (!highlightEnabled || keywords.length === 0) return;
+        
+        const walker = document.createTreeWalker(
+            document.body,
+            NodeFilter.SHOW_TEXT,
+            {
+                acceptNode: (node) => {
+                    if (!node.nodeValue || !node.nodeValue.trim()) return NodeFilter.FILTER_REJECT;
+                    const parent = node.parentElement;
+                    if (!parent) return NodeFilter.FILTER_REJECT;
+                    const tag = parent.tagName;
+                    if (['SCRIPT', 'STYLE', 'NOSCRIPT', 'MARK'].includes(tag)) return NodeFilter.FILTER_REJECT;
+                    return NodeFilter.FILTER_ACCEPT;
+                }
+            }
+        );
+        
+        const textNodes = [];
+        let node;
+        while (node = walker.nextNode()) textNodes.push(node);
+        
+        keywords.forEach(keyword => {
+            if (!keyword?.trim()) return;
+            const regex = new RegExp(keyword.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\\\$&'), 'gi');
+            
+            textNodes.forEach(textNode => {
+                const text = textNode.nodeValue;
+                const matches = [];
+                let match;
+                
+                while ((match = regex.exec(text)) !== null) {
+                    matches.push({ start: match.index, end: match.index + match[0].length });
+                }
+                
+                if (matches.length > 0 && textNode.parentNode) {
+                    const frag = document.createDocumentFragment();
+                    let lastIdx = 0;
+                    
+                    matches.forEach(m => {
+                        if (m.start > lastIdx) frag.appendChild(document.createTextNode(text.substring(lastIdx, m.start)));
+                        const mark = document.createElement('mark');
+                        mark.className = 'kw-hl';
+                        mark.style.cssText = `background:${highlightColor};padding:1px 2px;border-radius:2px`;
+                        mark.textContent = text.substring(m.start, m.end);
+                        frag.appendChild(mark);
+                        lastIdx = m.end;
+                    });
+                    
+                    if (lastIdx < text.length) frag.appendChild(document.createTextNode(text.substring(lastIdx)));
+                    textNode.parentNode.replaceChild(frag, textNode);
+                }
             });
-            return;
-        }
-        pageDivs.forEach((div, idx) => {
-            div.style.display = settings.maxSubjects > 0 && idx >= settings.maxSubjects ? 'none' : 'block';
         });
     }
+    
+    function removeHighlights() {
+        document.querySelectorAll('mark.kw-hl').forEach(mark => {
+            const txt = document.createTextNode(mark.textContent);
+            mark.parentNode?.replaceChild(txt, mark);
+        });
+        document.body.normalize();
+    }
+
 
     function observeAndInject() {
-        setTimeout(injectRatings, 1000);
-        const observer = new MutationObserver((mutations) => {
-            const hasSignificantChange = mutations.some(mutation => 
-                mutation.addedNodes.length > 0 && 
-                Array.from(mutation.addedNodes).some(node => 
-                    node.nodeType === 1 && (node.tagName === 'TABLE' || node.tagName === 'DIV' || node.id === 'page-wrapper' || (node.querySelector && (node.querySelector('table') || node.querySelector('.w3-table-all'))))
-                )
-            );
-            if (hasSignificantChange) setTimeout(injectRatings, 500);
+        setTimeout(() => {
+            injectRatings();
+            applyKeywordHighlighting();
+        }, 1000);
+        
+        let debounceTimer;
+        const observer = new MutationObserver(() => {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(() => {
+                injectRatings();
+                applyKeywordHighlighting();
+            }, 300);
         });
-        observer.observe(document.body, { childList: true, subtree: true, attributes: false });
+        observer.observe(document.body, { childList: true, subtree: true });
     }
 
     function initSidebar() {
         loadSettings();
         loadRatings();
+        loadKeywords();
 
-        document.getElementById('saveMaxSubjects')?.addEventListener('click', () => {
-            settings.maxSubjects = parseInt(document.getElementById('maxSubjectsInput').value) || 0;
-            saveSettings();
-            updateStatus('Max subjects saved!', '#28a745');
+        document.getElementById('addKeywordBtn')?.addEventListener('click', addKeyword);
+        
+        document.getElementById('keywordInput')?.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addKeyword();
+        });
+        
+        document.getElementById('highlightColorPicker')?.addEventListener('change', (e) => {
+            highlightColor = e.target.value;
+            chrome.storage.local.set({ highlightColor });
+            chrome.tabs.query({}, tabs => {
+                tabs.forEach(tab => {
+                    chrome.tabs.sendMessage(tab.id, { type: 'KEYWORDS_UPDATED', keywords, highlightColor, highlightEnabled }).catch(() => {});
+                });
+            });
+        });
+        
+        document.getElementById('highlightToggle')?.addEventListener('change', (e) => {
+            highlightEnabled = e.target.checked;
+            chrome.storage.local.set({ highlightEnabled });
+            chrome.tabs.query({}, tabs => {
+                tabs.forEach(tab => {
+                    chrome.tabs.sendMessage(tab.id, { type: 'KEYWORDS_UPDATED', keywords, highlightColor, highlightEnabled }).catch(() => {});
+                });
+            });
         });
 
         ['viewShowRatings', 'viewShowDetails', 'viewSortRating'].forEach(id => {
@@ -268,8 +346,7 @@
     }
 
     function loadSettings() {
-        chrome.storage.local.get(['maxSubjects', 'viewShowRatings', 'viewShowDetails', 'viewSortRating', 'registerShowRatings', 'registerShowDetails', 'registerSortRating'], result => {
-            settings.maxSubjects = parseInt(result.maxSubjects) || 0;
+        chrome.storage.local.get(['viewShowRatings', 'viewShowDetails', 'viewSortRating', 'registerShowRatings', 'registerShowDetails', 'registerSortRating'], result => {
             settings.viewShowRatings = result.viewShowRatings !== false;
             settings.viewShowDetails = result.viewShowDetails === true;
             settings.viewSortRating = result.viewSortRating === true;
@@ -277,8 +354,7 @@
             settings.registerShowDetails = result.registerShowDetails === true;
             settings.registerSortRating = result.registerSortRating === true;
 
-            if (document.getElementById('maxSubjectsInput')) {
-                document.getElementById('maxSubjectsInput').value = settings.maxSubjects || 0;
+            if (document.getElementById('viewShowRatings')) {
                 document.getElementById('viewShowRatings').checked = settings.viewShowRatings;
                 document.getElementById('viewShowDetails').checked = settings.viewShowDetails;
                 document.getElementById('viewSortRating').checked = settings.viewSortRating;
@@ -291,7 +367,6 @@
 
     function saveSettings() {
         chrome.storage.local.set({
-            maxSubjects: settings.maxSubjects,
             viewShowRatings: settings.viewShowRatings,
             viewShowDetails: settings.viewShowDetails,
             viewSortRating: settings.viewSortRating,
@@ -311,6 +386,70 @@
         chrome.storage.local.get(['facultyRatings'], result => {
             facultyRatings = result.facultyRatings || [];
             updateStats();
+        });
+    }
+
+    function loadKeywords() {
+        chrome.storage.local.get(['keywords', 'highlightColor', 'highlightEnabled'], result => {
+            keywords = result.keywords || [];
+            highlightColor = result.highlightColor || '#FFFF00';
+            highlightEnabled = result.highlightEnabled !== undefined ? result.highlightEnabled : true;
+            if (document.getElementById('highlightColorPicker')) {
+                document.getElementById('highlightColorPicker').value = highlightColor;
+            }
+            if (document.getElementById('highlightToggle')) {
+                document.getElementById('highlightToggle').checked = highlightEnabled;
+            }
+            renderKeywords();
+        });
+    }
+
+    function addKeyword() {
+        const input = document.getElementById('keywordInput');
+        const keyword = input.value.trim();
+        if (keyword && !keywords.includes(keyword)) {
+            keywords.push(keyword);
+            chrome.storage.local.set({ keywords }, () => {
+                renderKeywords();
+                chrome.tabs.query({}, tabs => {
+                    tabs.forEach(tab => {
+                        chrome.tabs.sendMessage(tab.id, { type: 'KEYWORDS_UPDATED', keywords, highlightColor, highlightEnabled }).catch(() => {});
+                    });
+                });
+            });
+            input.value = '';
+        }
+    }
+
+    function removeKeyword(keyword) {
+        keywords = keywords.filter(k => k !== keyword);
+        chrome.storage.local.set({ keywords }, () => {
+            renderKeywords();
+            chrome.tabs.query({}, tabs => {
+                tabs.forEach(tab => {
+                    chrome.tabs.sendMessage(tab.id, { type: 'KEYWORDS_UPDATED', keywords, highlightColor, highlightEnabled }).catch(() => {});
+                });
+            });
+        });
+    }
+
+    function renderKeywords() {
+        const container = document.getElementById('keywordsContainer');
+        if (!container) return;
+        
+        if (keywords.length === 0) {
+            container.innerHTML = '<span style="color:#999;font-size:11px;">No keywords added yet</span>';
+            return;
+        }
+        
+        container.innerHTML = '';
+        keywords.forEach((k, index) => {
+            const tag = document.createElement('div');
+            tag.className = 'keyword-tag';
+            tag.innerHTML = `${k}<button class="keyword-remove">×</button>`;
+            const removeBtn = tag.querySelector('.keyword-remove');
+            removeBtn.addEventListener('click', () => removeKeyword(k));
+            container.appendChild(tag);
         });
     }
 
@@ -376,13 +515,21 @@
             settings = req.settings || settings;
             setTimeout(injectRatings, 200);
         }
+        if (req.type === 'KEYWORDS_UPDATED') {
+            keywords = req.keywords || [];
+            highlightColor = req.highlightColor || '#FFFF00';
+            highlightEnabled = req.highlightEnabled !== undefined ? req.highlightEnabled : true;
+            applyKeywordHighlighting();
+        }
     });
 
     if (typeof chrome !== 'undefined' && chrome.storage) {
         if (isFFCSPage()) {
-            chrome.storage.local.get(['facultyRatings', 'maxSubjects', 'viewShowRatings', 'viewShowDetails', 'viewSortRating', 'registerShowRatings', 'registerShowDetails', 'registerSortRating'], result => {
+            chrome.storage.local.get(['facultyRatings', 'keywords', 'highlightColor', 'highlightEnabled', 'viewShowRatings', 'viewShowDetails', 'viewSortRating', 'registerShowRatings', 'registerShowDetails', 'registerSortRating'], result => {
                 facultyRatings = result.facultyRatings || [];
-                settings.maxSubjects = parseInt(result.maxSubjects) || 0;
+                keywords = result.keywords || [];
+                highlightColor = result.highlightColor || '#FFFF00';
+                highlightEnabled = result.highlightEnabled !== undefined ? result.highlightEnabled : true;
                 settings.viewShowRatings = result.viewShowRatings !== false;
                 settings.viewShowDetails = result.viewShowDetails === true;
                 settings.viewSortRating = result.viewSortRating === true;

@@ -128,6 +128,23 @@
       text-align: center;
     }
     
+    .text-input {
+      width: 100%;
+      padding: 6px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    
+    .color-input {
+      width: 50px;
+      height: 30px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    
     .save-btn {
       background-color: #007bff;
       color: white;
@@ -136,6 +153,17 @@
       font-size: 11px;
       border-radius: 4px;
       cursor: pointer;
+    }
+    
+    .add-btn {
+      background-color: #28a745;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      font-size: 12px;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
     }
     
     .import-section {
@@ -183,6 +211,38 @@
       font-size: 12px;
       color: #0056b3;
     }
+    
+    .keyword-tag {
+      display: inline-flex;
+      align-items: center;
+      background-color: #e7f3ff;
+      padding: 4px 8px;
+      border-radius: 12px;
+      margin: 4px;
+      font-size: 11px;
+      color: #0056b3;
+    }
+    
+    .keyword-remove {
+      background: none;
+      border: none;
+      color: #dc3545;
+      font-size: 14px;
+      cursor: pointer;
+      margin-left: 6px;
+      padding: 0;
+      line-height: 1;
+    }
+    
+    .keywords-container {
+      display: flex;
+      flex-wrap: wrap;
+      margin-top: 8px;
+      padding: 8px;
+      background-color: #f8f9fa;
+      border-radius: 4px;
+      min-height: 40px;
+    }
   </style>
 </head>
 <body>
@@ -191,15 +251,33 @@
     <h1>FFCS Settings</h1>
   </div>
   
+  <div class="import-section">
+    <div class="import-title">Import Faculty Ratings</div>
+    <input type="file" id="fileInput" accept=".json">
+    <button id="importBtn">Choose JSON File</button>
+    <p class="status-message" id="statusMessage">Click to import ratings data</p>
+    <div id="statsBox" class="stats-box" style="display: none;"></div>
+  </div>
+  
   <div class="page-section">
-    <div class="section-title">Course List Page</div>
-    <div class="toggle-item">
-      <span class="toggle-label">Max Subjects per Page</span>
-      <div class="input-group">
-        <input type="number" id="maxSubjectsInput" class="number-input" min="0" placeholder="0" value="0">
-        <button class="save-btn" id="saveMaxSubjects">Save</button>
-      </div>
+    <div class="section-title">Quick Access</div>
+    <div class="toggle-item" style="margin-bottom: 10px;">
+      <span class="toggle-label">Enable Keyword Highlighting</span>
+      <label class="switch">
+        <input type="checkbox" id="highlightToggle" checked>
+        <span class="slider"></span>
+      </label>
     </div>
+    <label class="toggle-label" style="font-size: 11px; color: #666; display: block; margin-bottom: 6px;">
+      Enter keywords like Faculty Name, Course Code, Slot, Venue for quick highlight
+    </label>
+    <input type="text" id="keywordInput" class="text-input" placeholder="Type keyword and press Enter...">
+    <div class="input-group" style="margin-bottom: 8px;">
+      <span class="toggle-label">Highlight Color:</span>
+      <input type="color" id="highlightColorPicker" class="color-input" value="#FFFF00">
+    </div>
+    <button class="add-btn" id="addKeywordBtn">Add Keyword</button>
+    <div class="keywords-container" id="keywordsContainer"></div>
   </div>
   
   <div class="page-section">
@@ -250,14 +328,6 @@
         <span class="slider"></span>
       </label>
     </div>
-  </div>
-  
-  <div class="import-section">
-    <div class="import-title">Import Faculty Ratings</div>
-    <input type="file" id="fileInput" accept=".json">
-    <button id="importBtn">Choose JSON File</button>
-    <p class="status-message" id="statusMessage">Click to import ratings data</p>
-    <div id="statsBox" class="stats-box" style="display: none;"></div>
   </div>
   
   <script src="ffcs.js"></script>
