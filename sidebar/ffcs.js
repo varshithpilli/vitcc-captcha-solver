@@ -21,6 +21,43 @@
         return str.replace(/\s+/g, ' ').trim().toLowerCase();
     }
 
+    function initializeTheme() {
+        const themeToggle = document.getElementById('theme-toggle');
+        const sunIcon = document.getElementById('sun-icon');
+        const moonIcon = document.getElementById('moon-icon');
+        const headerBorder = document.getElementById('header-border');
+        
+        if (!themeToggle) return; // Not on sidebar page
+        
+        chrome.storage.local.get(['theme'], function(result) {
+            const savedTheme = result.theme || 'dark';
+            applyTheme(savedTheme);
+        });
+        
+        function applyTheme(theme) {
+            if (theme === 'dark') {
+                document.body.classList.remove('light-mode');
+                document.body.classList.add('dark-mode');
+                if (sunIcon) sunIcon.style.display = 'none';
+                if (moonIcon) moonIcon.style.display = 'block';
+                if (headerBorder) headerBorder.style.borderBottomColor = '#404040';
+            } else {
+                document.body.classList.remove('dark-mode');
+                document.body.classList.add('light-mode');
+                if (sunIcon) sunIcon.style.display = 'block';
+                if (moonIcon) moonIcon.style.display = 'none';
+                if (headerBorder) headerBorder.style.borderBottomColor = '#e5e7eb';
+            }
+        }
+        
+        themeToggle.addEventListener('click', function() {
+            const currentTheme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            applyTheme(newTheme);
+            chrome.storage.local.set({ theme: newTheme });
+        });
+    }
+
     function getRatingColor(r) {
         if (r >= 9) return '#4CAF50';
         if (r >= 8) return '#8BC34A';
@@ -332,6 +369,9 @@
     }
 
     function initSidebar() {
+        // Theme management
+        initializeTheme();
+        
         loadSettings();
         loadRatings();
         loadKeywords();
@@ -397,6 +437,10 @@
         });
 
         document.getElementById('importBtn')?.addEventListener('click', () => {
+            document.getElementById('fileInput').click();
+        });
+
+        document.getElementById('importAgainBtn')?.addEventListener('click', () => {
             document.getElementById('fileInput').click();
         });
 
@@ -567,12 +611,31 @@
 
     function updateStats() {
         const statsBox = document.getElementById('statsBox');
-        if (statsBox) {
-            if (facultyRatings.length > 0) {
+        const importSection = document.getElementById('importSection');
+        const facultyCountSection = document.getElementById('facultyCountSection');
+        const facultyCountEl = document.getElementById('facultyCount');
+        
+        if (facultyRatings.length > 0) {
+            // Show faculty count section, hide import section
+            if (importSection && facultyCountSection && facultyCountEl) {
+                importSection.style.display = 'none';
+                facultyCountSection.style.display = 'block';
+                facultyCountEl.textContent = facultyRatings.length;
+            }
+            
+            if (statsBox) {
                 const avg = (facultyRatings.reduce((sum, f) => sum + f.overall_rating, 0) / facultyRatings.length).toFixed(1);
                 statsBox.innerHTML = `<strong>${facultyRatings.length}</strong> faculty loaded | Avg: <strong>${avg}</strong>`;
                 statsBox.style.display = 'block';
-            } else {
+            }
+        } else {
+            // Show import section, hide faculty count section
+            if (importSection && facultyCountSection) {
+                importSection.style.display = 'block';
+                facultyCountSection.style.display = 'none';
+            }
+            
+            if (statsBox) {
                 statsBox.style.display = 'none';
             }
         }

@@ -22,12 +22,14 @@
         "sidebar/facultyRatings.js",
         "sidebar/ffcs.js",
         "sidebar/example.js",
+        "sidebar/credentialsInjection.js",
         "navigation/facultyRatingsInjector.js"
       ],
       "matches": [
         "*://vtopcc.vit.ac.in/*",
         "*://vtopregcc.vit.ac.in/*",
-        "*://vtop.vit.ac.in/*"
+        "*://vtop.vit.ac.in/*",
+        "*://lms.vit.ac.in/*"
       ]
     }
   ],
@@ -36,11 +38,13 @@
       "matches": [
         "*://vtopcc.vit.ac.in/*",
         "*://vtopregcc.vit.ac.in/*",
-        "*://vtop.vit.ac.in/*"
+        "*://vtop.vit.ac.in/*",
+        "*://lms.vit.ac.in/*"
       ],
       "js": [
         "login/utils.js",
         "login/captcha.js",
+        "login/autoLogin.js",
         "navigation/attendance.js",
         "navigation/marks.js",
         "navigation/nav.js",
