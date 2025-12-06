@@ -539,12 +539,15 @@
       container.innerHTML = files.map(name => {
         const escapedName = name.replace(/'/g, "\\'");
         return `
-          <div class="file-item">
-            <span class="file-name" title="${name}.json">${name}.json</span>
+          <div class="file-item" style="flex-direction: column; align-items: stretch;">
+            <span class="file-name" title="${name}.json" style="margin-bottom: 8px;">${name}.json</span>
             <div class="file-actions">
-              <button class="icon-btn" data-action="copy" data-name="${escapedName}">Copy</button>
-              <button class="icon-btn" data-action="json" data-name="${escapedName}">JSON</button>
-              <button class="icon-btn" data-action="ics" data-name="${escapedName}">ICS</button>
+              <div class="file-actions-row">
+                <button class="icon-btn" data-action="copy" data-name="${escapedName}">Copy</button>
+                <button class="icon-btn" data-action="json" data-name="${escapedName}">JSON</button>
+                <button class="icon-btn" data-action="ics" data-name="${escapedName}">ICS</button>
+                <button class="icon-btn" data-action="github" data-name="${escapedName}">GitHub PR</button>
+              </div>
             </div>
           </div>
         `;
@@ -552,7 +555,7 @@
 
       // Add event listeners to buttons
       container.querySelectorAll('.icon-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
+        btn.addEventListener('click', async (e) => {
           const action = e.currentTarget.getAttribute('data-action');
           const name = e.currentTarget.getAttribute('data-name');
           
@@ -562,6 +565,8 @@
             downloadFile(name);
           } else if (action === 'ics') {
             downloadICS(name);
+          } else if (action === 'github') {
+            await createGitHubPR(name);
           }
         });
       });
@@ -629,8 +634,8 @@
           day.events.forEach(evt => {
             ics += `BEGIN:VEVENT\r\n`;
             ics += `DTSTART;VALUE=DATE:${date}\r\n`;
-            ics += `SUMMARY:${evt.type} - ${evt.category}\r\n`;
-            ics += `DESCRIPTION:${evt.description}\r\n`;
+            ics += `SUMMARY:${evt.text}\r\n`;
+            ics += `DESCRIPTION:${evt.description} (${evt.category})\r\n`;
             ics += `END:VEVENT\r\n`;
           });
         });
@@ -645,6 +650,53 @@
       a.download = `${name}.ics`;
       a.click();
       URL.revokeObjectURL(url);
+    }
+
+    async function createGitHubPR(name) {
+      const file = state.files[name];
+      if (!file) {
+        setStatus('extractStatus', 'File not found', 'error');
+        return;
+      }
+
+      try {
+        setStatus('extractStatus', 'Preparing GitHub PR...', 'info');
+        
+        // Always clear method to force selection
+        await window.VTOPCalendarDataUpdate.GitHubPRHandler.clearMethod();
+        
+        // Get stored config (without method)
+        let config = await window.VTOPCalendarDataUpdate.GitHubPRHandler.getStoredConfig();
+        
+        // Always prompt for method selection (and other details if not stored)
+        const newConfig = await window.VTOPCalendarDataUpdate.GitHubPRHandler.promptForConfig(config);
+        
+        // Save the complete config (including method and token)
+        await window.VTOPCalendarDataUpdate.GitHubPRHandler.saveConfig(newConfig);
+        
+        // Create PR
+        setStatus('extractStatus', 'Creating pull request...', 'info');
+        const result = await window.VTOPCalendarDataUpdate.GitHubPRHandler.createPullRequest(file.data, name, newConfig);
+        
+        if (result.success) {
+          if (result.method === 'web') {
+            setStatus('extractStatus', result.message, 'success');
+          } else {
+            setStatus('extractStatus', `PR created successfully! #${result.prNumber}`, 'success');
+            setTimeout(() => {
+              if (confirm('Pull request created! Would you like to open it in a new tab?')) {
+                window.open(result.prUrl, '_blank');
+              }
+            }, 500);
+          }
+        } else {
+          setStatus('extractStatus', 'PR failed: ' + result.error, 'error');
+        }
+      } catch (error) {
+        if (error.message !== 'Cancelled') {
+          setStatus('extractStatus', 'Error: ' + error.message, 'error');
+        }
+      }
     }
 
     function init() {
