@@ -11,6 +11,12 @@
     "storage",
     "sidePanel"
   ],
+  "host_permissions": [
+    "*://vtopcc.vit.ac.in/*",
+    "*://vtopregcc.vit.ac.in/*",
+    "*://vtop.vit.ac.in/*",
+    "*://lms.vit.ac.in/*"
+  ],
   "side_panel": {
     "default_path": "sidebar/sidebar.html"
   },
@@ -24,6 +30,7 @@
         "sidebar/ffcs2-multiWrapper.js",
         "sidebar/example.js",
         "sidebar/credentialsInjection.js",
+        "sidebar/vtop_calendar_extractor.js",
         "navigation/facultyRatingsInjector.js"
       ],
       "matches": [
@@ -52,7 +59,8 @@
         "navigation/detector.js",
         "navigation/facultyRatingsInjector.js",
         "sidebar/ffcs.js",
-        "sidebar/ffcs2-multiWrapper.js"
+        "sidebar/ffcs2-multiWrapper.js",
+        "sidebar/vtop_calendar_extractor.js"
       ]
     }
   ]
